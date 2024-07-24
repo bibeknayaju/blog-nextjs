@@ -2,32 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+/* Styling for the WhatsApp button container */
+.whatsapp-container {
+  position: fixed;
+  bottom: 20px; /* Adjust as needed */
+  right: 20px; /* Adjust as needed */
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  z-index: 1000; /* Ensure it's above other content */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+/* Styling for the WhatsApp button link */
+.whatsapp-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+/* Styling for the WhatsApp icon */
+.whatsapp-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Styling for the WhatsApp message */
+.whatsapp-message {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.2;
 }
