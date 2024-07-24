@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { CreatePost, DeletePost } from "@/lib/schemas";
+import { CreateComment, CreatePost, DeletePost } from "@/lib/schemas";
 
 import { getUserId } from "./utils";
 
@@ -91,5 +91,51 @@ export async function deletePost(id: string) {
   } catch (error) {
     console.error("Database Error", error);
     throw new Error("Database Error: Failed to delete post");
+  }
+}
+
+export async function createComment(data: { content: string; postId: string }) {
+  const userId = await getUserId();
+
+  const validatedFields = CreateComment.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to create comment",
+    };
+  }
+
+  const { content, postId } = validatedFields.data;
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!post) {
+    return {
+      message: "Post not found",
+    };
+  }
+
+  try {
+    await prisma.comment.create({
+      data: {
+        content,
+        postId,
+        authorId: userId,
+      },
+    });
+    revalidatePath(`/`);
+    return {
+      message: "Comment created successfully",
+    };
+  } catch (error) {
+    console.error("Database Error", error);
+    return {
+      message: "Database Error: Failed to create comment",
+    };
   }
 }

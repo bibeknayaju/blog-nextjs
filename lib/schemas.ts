@@ -17,3 +17,11 @@ export const PostSchema = z.object({
 // if exclude id
 export const CreatePost = PostSchema.omit({ id: true });
 export const DeletePost = PostSchema.pick({ id: true });
+
+export const CommentSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  postId: z.string(),
+});
+
+export const CreateComment = CommentSchema.omit({ id: true });

@@ -56,7 +56,14 @@ export async function fetchBySlug(
           },
         },
         author: true,
-        comments: true,
+        comments: {
+          include: {
+            author: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 

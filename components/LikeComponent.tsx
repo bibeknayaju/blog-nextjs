@@ -33,10 +33,20 @@ function LikeComponent({ post }: { post: PostWithExtras }) {
     if (optimisticLikes.some(predicate)) {
       // Remove like
       const newLike = optimisticLikes.find(predicate);
-      addOptimisticLike({ userId, postId: post.id });
+      addOptimisticLike({
+        userId,
+        postId: post.id,
+        id: "",
+        createdAt: undefined as any,
+      });
     } else {
       // Add like
-      addOptimisticLike({ userId, postId: post.id });
+      addOptimisticLike({
+        userId,
+        postId: post.id,
+        id: "",
+        createdAt: undefined as any,
+      });
     }
   };
 
