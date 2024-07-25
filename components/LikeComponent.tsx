@@ -1,66 +1,73 @@
 "use client";
-import { PostWithExtras } from "@/lib/definitions";
+
+import { PostWithExtras, LikeWithExtras } from "@/lib/definitions";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
-import { useSession } from "next-auth/react";
-import React, { useTransition } from "react";
+import { useState } from "react";
 import ActionIcon from "./ActionIcon";
-import { Like } from "@prisma/client";
+import { likePost } from "@/lib/actions";
+import { toast } from "sonner"; // Assuming you are using sonner for notifications
+import { User } from "@prisma/client";
 
-function LikeComponent({ post }: { post: PostWithExtras }) {
-  const { data: session } = useSession();
-  const userId = session?.user?.id ?? "";
+function LikeButton({
+  post,
+  loggedInUser,
+}: {
+  post: PostWithExtras;
+  loggedInUser: User | null;
+}) {
+  const [likes, setLikes] = useState(post.likes);
 
-  const predicate = (like: Like) =>
-    like.userId === userId && like.postId === post.id;
+  const handleLike = async (postId: string) => {
+    if (!loggedInUser) {
+      console.error("User ID is undefined");
+      return;
+    }
 
-  const [optimisticLikes, setOptimisticLikes] = React.useState<Like[]>(
-    post.likes
-  );
-  const [isPending, startTransition] = useTransition();
+    const result = await likePost(postId);
 
-  const addOptimisticLike = (newLike: Like) => {
-    startTransition(() => {
-      setOptimisticLikes((prevLikes) =>
-        prevLikes.some(predicate)
-          ? prevLikes.filter((like) => like.userId !== userId)
-          : [...prevLikes, newLike]
-      );
-    });
-  };
-
-  const handleClick = () => {
-    if (optimisticLikes.some(predicate)) {
-      // Remove like
-      const newLike = optimisticLikes.find(predicate);
-      addOptimisticLike({
-        userId,
-        postId: post.id,
-        id: "",
-        createdAt: undefined as any,
-      });
-    } else {
-      // Add like
-      addOptimisticLike({
-        userId,
-        postId: post.id,
-        id: "",
-        createdAt: undefined as any,
-      });
+    if (result.message === "Post liked successfully") {
+      const newLike: LikeWithExtras = {
+        id: "new-like-id", // Assign a temporary id
+        postId,
+        userId: loggedInUser.id,
+        createdAt: new Date(),
+        user: loggedInUser, // Actual logged in user object
+        post, // The post object itself
+      };
+      setLikes([...likes, newLike]);
+    } else if (result.message === "Post unliked successfully") {
+      setLikes(likes.filter((like) => like.userId !== loggedInUser.id));
     }
   };
 
+  const isLiked = loggedInUser
+    ? likes.some((like) => like.userId === loggedInUser.id)
+    : false;
+
   return (
-    <div>
-      <ActionIcon onClick={handleClick}>
-        <Heart
-          className={cn("h-6 w-6", {
-            "text-red-500 fill-red-500": optimisticLikes.some(predicate),
-          })}
-        />
-      </ActionIcon>
+    <div className="flex flex-col">
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!loggedInUser) {
+            toast.error("You need to be logged in to like a post");
+          } else {
+            await handleLike(post.id);
+          }
+        }}>
+        <input type="hidden" name="postId" value={post.id} />
+
+        <ActionIcon>
+          <Heart
+            className={cn("h-6 w-6", {
+              "text-red-500 fill-red-500": isLiked,
+            })}
+          />
+        </ActionIcon>
+      </form>
     </div>
   );
 }
 
-export default LikeComponent;
+export default LikeButton;

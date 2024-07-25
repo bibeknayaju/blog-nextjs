@@ -25,3 +25,7 @@ export const CommentSchema = z.object({
 });
 
 export const CreateComment = CommentSchema.omit({ id: true });
+
+export const LikeSchema = z.object({
+  postId: z.string(),
+});

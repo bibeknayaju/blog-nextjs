@@ -125,4 +125,5 @@ model Like {
 
   @@index([userId])
   @@index([postId])
+  @@unique([userId, postId])
 }

@@ -4,7 +4,12 @@ import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { CreateComment, CreatePost, DeletePost } from "@/lib/schemas";
+import {
+  CreateComment,
+  CreatePost,
+  DeletePost,
+  LikeSchema,
+} from "@/lib/schemas";
 
 import { getUserId } from "./utils";
 
@@ -136,6 +141,104 @@ export async function createComment(data: { content: string; postId: string }) {
     console.error("Database Error", error);
     return {
       message: "Database Error: Failed to create comment",
+    };
+  }
+}
+
+// for liking the post
+// for liking the post
+export async function likePost(postId: string) {
+  const userId = await getUserId();
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!post) {
+    return {
+      message: "Post not found",
+    };
+  }
+
+  // Manually check for the like using findFirst
+  const like = await prisma.like.findFirst({
+    where: {
+      postId: postId,
+      userId: userId,
+    },
+  });
+
+  if (like) {
+    try {
+      await prisma.like.delete({
+        where: {
+          id: like.id, // Use the id to delete the like
+        },
+      });
+
+      revalidatePath(`/`);
+      return {
+        message: "Post unliked successfully",
+      };
+    } catch (error) {
+      console.error("Database Error: Failed to unlike post", error);
+      return {
+        message: "Database Error: Failed to unlike post",
+      };
+    }
+  } else {
+    try {
+      await prisma.like.create({
+        data: {
+          postId,
+          userId,
+        },
+      });
+
+      revalidatePath(`/`);
+      return {
+        message: "Post liked successfully",
+      };
+    } catch (error) {
+      console.error("Database Error: Failed to like post", error);
+      return {
+        message: "Database Error: Failed to like post",
+      };
+    }
+  }
+}
+
+// for deleting comment
+export async function deleteComment(commentId: string) {
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+  });
+
+  if (!comment) {
+    return {
+      message: "Comment not found",
+    };
+  }
+
+  try {
+    await prisma.comment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+
+    revalidatePath(`/`);
+    return {
+      message: "Comment deleted successfully",
+    };
+  } catch (error) {
+    console.error("Database Error", error);
+    return {
+      message: "Database Error: Failed to delete comment",
     };
   }
 }

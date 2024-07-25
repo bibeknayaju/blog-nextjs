@@ -1,18 +1,36 @@
 import { auth } from "@/auth";
 import CommentForm from "@/components/CommentForm";
 import FloatingNavbar from "@/components/FloatingNavbar";
-import LikeComponent from "@/components/LikeComponent";
 import PostInteractionComp from "@/components/PostInteractionComp";
 import { fetchBySlug } from "@/lib/datas";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React from "react";
+import { User } from "@prisma/client";
 
 async function PostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const session = await auth();
-
   const post = await fetchBySlug(slug);
   const readTime = Math.ceil((post?.content.split(" ").length ?? 0) / 200);
+
+  // Ensure that loggedInUser contains all the necessary properties
+  const loggedInUser: User | null = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email ?? "", // Ensure email is a string
+        password: null,
+        name: session.user.name ?? null,
+        bio: null,
+        website: null,
+        gender: null,
+        username: session.user.username ?? null,
+        image: session.user.image ?? null,
+        emailVerified: null,
+        createdAt: new Date(), // Placeholder value, replace with actual if available
+        updatedAt: new Date(), // Placeholder value, replace with actual if available
+      }
+    : null;
+
   return (
     <div className="mt-10">
       <div className="max-w-[90rem] flex flex-col text-center mx-auto ">
@@ -42,7 +60,7 @@ async function PostPage({ params }: { params: { slug: string } }) {
           </p>
         </div>
       </div>
-      {/* {post && <PostInteractionComp post={post} />} */}
+
       {post && <PostInteractionComp post={post} />}
 
       <div>
@@ -52,22 +70,20 @@ async function PostPage({ params }: { params: { slug: string } }) {
           alt={post?.title}
         />
 
-        {/* <p className="text-lg text-gray-800 dark:text-gray-200 max-w-3xl mx-auto my-2 text-center relative z-10">
-  {post?.content}
-</p> */}
         {post?.content && (
           <div className="max-w-3xl mx-auto mt-10">
             <div dangerouslySetInnerHTML={{ __html: post?.content }} />
           </div>
         )}
       </div>
+
       {post && (
         <div className="max-w-xl w-full mx-auto">
-          <FloatingNavbar post={post} />
+          <FloatingNavbar loggedInUser={loggedInUser} post={post} />
         </div>
       )}
 
-      {post && <CommentForm postId={post.id} post={post} />}
+      {post && <CommentForm user={loggedInUser} postId={post.id} post={post} />}
     </div>
   );
 }
