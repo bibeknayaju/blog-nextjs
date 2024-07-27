@@ -36,3 +36,81 @@
   font-weight: bold;
   line-height: 1.2;
 }
+
+/* Add this to your global CSS file (e.g., styles/globals.css) */
+
+/* Ensure basic typography styling */
+.content-display {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #fff; /* Adjust color based on your theme */
+}
+
+/* Ensure headings are styled correctly */
+.content-display h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+.content-display h2 {
+  font-size: 1.5em;
+  margin: 0.75em 0;
+}
+
+.content-display h3 {
+  font-size: 1.17em;
+  margin: 0.83em 0;
+}
+
+/* Ensure other elements are styled correctly */
+.content-display p {
+  margin: 1em 0;
+}
+
+.content-display strong {
+  font-weight: bold;
+}
+
+.content-display em {
+  font-style: italic;
+}
+
+.content-display u {
+  text-decoration: underline;
+}
+
+.content-display s {
+  text-decoration: line-through;
+}
+
+.content-display blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 0.25em solid #ddd;
+  color: #999;
+}
+
+/* Ensure lists are styled correctly */
+.content-display ol,
+.content-display ul {
+  margin: 1em 0;
+  padding-left: 40px;
+}
+
+.content-display ol {
+  list-style-type: decimal;
+}
+
+.content-display ul {
+  list-style-type: disc;
+}
+
+/* Ensure links are styled correctly */
+.content-display a {
+  color: #1a0dab;
+  text-decoration: underline;
+}
+
+.content-display a:hover {
+  text-decoration: none;
+}

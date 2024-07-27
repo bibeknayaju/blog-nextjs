@@ -9,16 +9,17 @@ import {
   CreatePost,
   DeletePost,
   LikeSchema,
+  UpdatePost,
 } from "@/lib/schemas";
 
 import { getUserId } from "./utils";
 
 // this function for creating a post
+// this function for creating a post
 export async function createPost(values: z.infer<typeof CreatePost>) {
   console.log("values", values);
   // this for getting the userId
   const userId = await getUserId();
-  console.log("userId", userId);
 
   // this for validating the fields,
   const validatedFields = CreatePost.safeParse(values);
@@ -34,7 +35,12 @@ export async function createPost(values: z.infer<typeof CreatePost>) {
   // this for extracting the fields from the validatedFields
   const { fileUrl, content, title, summary } = validatedFields.data;
 
-  console.log("data", validatedFields.data);
+  const slug = title
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .join("-")
+    .replace(/[^a-zA-Z0-9-\u0900-\u097F]+/g, "");
   // this logic for creating a post
   try {
     await prisma.post.create({
@@ -48,22 +54,19 @@ export async function createPost(values: z.infer<typeof CreatePost>) {
             id: userId,
           },
         },
-        slug: title
-          .toLowerCase()
-          .trim()
-          .split(/\s+/)
-          .join("-")
-          .replace(/[^a-zA-Z0-9-\u0900-\u097F]+/g, ""),
+        slug,
       },
     });
   } catch (error) {
+    console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to create post",
     };
   }
 
-  revalidatePath("/");
-  redirect("/");
+  return {
+    message: "Post created successfully",
+  };
 }
 
 // delete the post
@@ -73,17 +76,26 @@ export async function deletePost(id: string) {
   const post = await prisma.post.findUnique({
     where: {
       id,
-      author: {
-        id: userId,
-      },
+    },
+    include: {
+      author: true,
+      comments: true, // Include comments to delete them later
     },
   });
 
-  if (!post) {
-    throw new Error("Post not found");
+  if (!post || post.author.id !== userId) {
+    throw new Error("Post not found or you are not the author");
   }
 
   try {
+    // Delete all comments related to the post
+    await prisma.comment.deleteMany({
+      where: {
+        postId: id,
+      },
+    });
+
+    // Now delete the post
     await prisma.post.delete({
       where: {
         id,
@@ -91,14 +103,12 @@ export async function deletePost(id: string) {
     });
 
     revalidatePath("/");
-    // redirect("/"); // This is server-side redirection
     return { message: "Post Deleted Successfully" };
   } catch (error) {
     console.error("Database Error", error);
     throw new Error("Database Error: Failed to delete post");
   }
 }
-
 export async function createComment(data: { content: string; postId: string }) {
   const userId = await getUserId();
 
@@ -239,6 +249,69 @@ export async function deleteComment(commentId: string) {
     console.error("Database Error", error);
     return {
       message: "Database Error: Failed to delete comment",
+    };
+  }
+}
+
+// for updating the post
+export async function updatePost(formData: FormData) {
+  const userId = await getUserId();
+
+  const validatedFields = UpdatePost.safeParse({
+    id: formData.get("id"),
+    title: formData.get("title"),
+    content: formData.get("content"),
+    slug: formData.get("slug"),
+    summary: formData.get("summary"),
+    fileUrl: formData.get("fileUrl"),
+  });
+
+  if (!validatedFields.success) {
+    console.log(
+      "Validation errors:",
+      validatedFields.error.flatten().fieldErrors
+    );
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to update post",
+    };
+  }
+
+  const { id, title, content, fileUrl, slug, summary } = validatedFields.data;
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id,
+      authorId: userId,
+    },
+  });
+
+  if (!post) {
+    return {
+      message: "Post not found",
+    };
+  }
+
+  try {
+    await prisma.post.update({
+      where: {
+        id,
+      },
+      data: {
+        title,
+        content,
+        slug,
+        summary,
+        fileUrl,
+      },
+    });
+    return {
+      message: "Post updated successfully",
+    };
+  } catch (error) {
+    console.error("Database Error", error);
+    return {
+      message: "Database Error: Failed to update post",
     };
   }
 }

@@ -4,7 +4,7 @@ import "react-quill/dist/quill.snow.css"; // import styles
 
 interface EditorProps {
   onChange: (content: string) => void;
-  value?: string;
+  value: string;
 }
 
 const TextEditor = ({ onChange, value }: EditorProps) => {
@@ -13,8 +13,10 @@ const TextEditor = ({ onChange, value }: EditorProps) => {
   };
 
   return (
-    <div className="text-editor">
+    <div className="text-editor h-[30vh] ">
       <ReactQuill
+        className="h-full w-full overflow-y-scroll"
+        value={value}
         onChange={handleEditorChange}
         theme="snow"
         modules={{

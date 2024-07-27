@@ -6,6 +6,7 @@ import { fetchBySlug } from "@/lib/datas";
 import Image from "next/image";
 import React from "react";
 import { User } from "@prisma/client";
+import ContentDisplay from "@/components/ContentDisplay";
 
 async function PostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
@@ -33,7 +34,7 @@ async function PostPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="mt-10">
-      <div className="max-w-[90rem] flex flex-col text-center mx-auto ">
+      <div className="max-w-[70rem] flex flex-col text-center mx-auto ">
         <h4 className="font-bold text-5xl mb-4">{post?.title}</h4>
         {post?.summary && (
           <span className=" font-semibold text-gray-300 text-2xl">
@@ -71,19 +72,25 @@ async function PostPage({ params }: { params: { slug: string } }) {
         />
 
         {post?.content && (
-          <div className="max-w-3xl mx-auto mt-10">
-            <div dangerouslySetInnerHTML={{ __html: post?.content }} />
+          <ContentDisplay content={post?.content} />
+
+          // <div className="max-w-3xl mx-auto mt-10">
+          //   <div dangerouslySetInnerHTML={{ __html: post?.content }} />
+          // </div>
+        )}
+
+        {post && (
+          <div className="max-w-xl w-full mx-auto">
+            <FloatingNavbar loggedInUser={loggedInUser} post={post} />
           </div>
         )}
       </div>
 
-      {post && (
-        <div className="max-w-xl w-full mx-auto">
-          <FloatingNavbar loggedInUser={loggedInUser} post={post} />
-        </div>
-      )}
-
-      {post && <CommentForm user={loggedInUser} postId={post.id} post={post} />}
+      <div className="max-w-3xl mx-auto mt-10">
+        {post && (
+          <CommentForm user={loggedInUser} postId={post.id} post={post} />
+        )}
+      </div>
     </div>
   );
 }

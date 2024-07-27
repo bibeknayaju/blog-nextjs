@@ -6,7 +6,7 @@ async function PostsGrid() {
   const data = await fetchPosts();
 
   return (
-    <div className="grid mb-10 lg:grid-cols-3  max-w-[90rem] mx-auto space-x-3">
+    <div className="grid mb-10 md:grid-cols-2 grid-cols-1 lg:grid-cols-3 max-w-[90rem] mx-auto gap-3">
       {data.map((post) => (
         <Post post={post} key={post.id} />
       ))}

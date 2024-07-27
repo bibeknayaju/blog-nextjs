@@ -2,7 +2,6 @@ import { PostWithExtras } from "@/lib/definitions";
 import { MessageCircleMore } from "lucide-react";
 
 function CommentComponent({ post }: { post: PostWithExtras }) {
-  console.log("THIS IS POST", post.comments);
   return (
     <div className="flex gap-1 items-center">
       <span className="text-gray-300 text-sm font-semibold">

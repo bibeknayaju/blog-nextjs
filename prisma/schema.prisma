@@ -70,7 +70,6 @@ model Post {
   title       String
   content     String
   summary     String
-  published   Boolean      @default(false)
   authorId    String
   slug        String       @unique
   author      User         @relation(fields: [authorId], references: [id])

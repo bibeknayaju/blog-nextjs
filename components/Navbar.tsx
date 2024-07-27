@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import LogoutButton from "./LogoutButton";
 
 export default function Navbar() {
   const navigate = useRouter();
@@ -25,7 +26,6 @@ export default function Navbar() {
     ?.split(" ")
     .map((name) => name.charAt(0))
     .join("");
-
   if (!mount) return null;
 
   return (
@@ -58,15 +58,17 @@ export default function Navbar() {
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuLabel>
                     <button
                       onClick={() => {
-                        signOut();
+                        navigate.push("/account");
                       }}>
-                      Logout
+                      My Account
                     </button>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <LogoutButton />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

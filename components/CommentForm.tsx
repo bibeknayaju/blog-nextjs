@@ -78,7 +78,7 @@ function CommentForm({
     }
   };
   return (
-    <div className="flex flex-col w-full mt-10">
+    <div className="flex flex-col  w-full mt-10">
       {user ? (
         <form
           className="flex gap-3 w-full justify-between items-end mb-3"

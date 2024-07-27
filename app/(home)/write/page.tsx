@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -12,59 +12,55 @@ import Image from "next/image";
 import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "sonner";
 import { createPost } from "@/lib/actions";
-import useMount from "@/hooks/useMount";
 import TextInput from "@/components/InputFields/TextInput";
 import { Label } from "@/components/ui/label";
 import dynamic from "next/dynamic";
+import ContentDisplay from "@/components/ContentDisplay";
+
+const TextEditor = dynamic(() => import("@/components/TextEditor"), {
+  ssr: false,
+});
 
 function WritePage() {
-  const TextEditor = useMemo(
-    () => dynamic(() => import("@/components/TextEditor"), { ssr: false }),
-    []
-  );
-
   const router = useRouter();
-  const mount = useMount();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [blogData, setBlogData] = useState<z.infer<typeof CreatePost>>({
     fileUrl: "",
     title: "",
     content: "",
-    published: false,
     summary: "",
-    slug: "",
   });
+
   const form = useForm<z.infer<typeof CreatePost>>({
     resolver: zodResolver(CreatePost),
     defaultValues: {
-      fileUrl: undefined,
+      fileUrl: "",
       title: "",
-      content: undefined,
-      published: false,
+      content: "",
       summary: "",
     },
   });
 
   const fileUrl = form.watch("fileUrl");
 
-  if (!mount) return null;
+  if (!mounted) return null;
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  console.log(blogData);
 
+  const handleSubmit = async (data: z.infer<typeof CreatePost>) => {
     try {
       const datas = {
-        fileUrl: blogData.fileUrl,
-        title: blogData.title,
-        content: blogData.content,
-        published: false,
-        summary: blogData.summary,
-        slug: blogData.title
-          .toLowerCase()
-          .trim()
-          .split(/\s+/)
-          .join("-")
-          .replace(/[^a-zA-Z0-9-\u0900-\u097F]+/g, ""),
+        title: data.title,
+        content: data.content,
+        summary: data.summary,
+        fileUrl: data.fileUrl,
       };
+
       const response = await createPost(datas);
       if (response) {
         toast.success("Post created successfully");
@@ -77,24 +73,13 @@ function WritePage() {
   };
 
   const handleEditorChange = (content: string) => {
-    setBlogData({ ...blogData, content });
-    // You can also save the content to the state or send it to an API
+    setBlogData((prevData) => ({ ...prevData, content }));
+    form.setValue("content", content);
   };
 
   return (
-    // <Dialog open={isCreatePage} onOpenChange={(open) => !open && router.back()}>
-    //   <DialogContent>
-    //     <DialogHeader>
-    //       <DialogTitle>Create new post</DialogTitle>
-    //     </DialogHeader>
-
-    //       {/* <input type="submit" value={"Create Post"} /> */}
-    //     </form>
-    //   </DialogContent>
-    // </Dialog>
-
     <div>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         {!!fileUrl ? (
           <div className="h-96 md:h-[450px] overflow-hidden rounded-md">
             <AspectRatio ratio={1 / 1} className="relative h-full">
@@ -114,10 +99,10 @@ function WritePage() {
               onClientUploadComplete={(res) => {
                 form.setValue("fileUrl", res[0].url);
                 toast.success("Upload complete");
-                setBlogData({
-                  ...blogData,
+                setBlogData((prevData) => ({
+                  ...prevData,
                   fileUrl: res[0].url,
-                });
+                }));
               }}
               onUploadError={(error: Error) => {
                 console.error(error);
@@ -129,38 +114,44 @@ function WritePage() {
 
         <TextInput
           label="Title"
-          classNames=" text-sm"
-          type={"text"}
+          classNames="text-sm"
+          type="text"
           placeholder="Enter Title"
           name="title"
-          onChange={(value: any) => setBlogData({ ...blogData, title: value })}
-          required={true}
+          onChange={(value: string) => {
+            form.setValue("title", value);
+            setBlogData((prevData) => ({
+              ...prevData,
+              title: value,
+            }));
+          }}
+          required
         />
 
         <TextInput
           label="Summary"
-          classNames=" text-sm"
-          type={"text"}
+          classNames="text-sm"
+          type="text"
           placeholder="Summary of the post"
           name="summary"
-          onChange={(value: any) =>
-            setBlogData({ ...blogData, summary: value })
-          }
-          required={true}
+          onChange={(value: string) => {
+            form.setValue("summary", value);
+            setBlogData((prevData) => ({
+              ...prevData,
+              summary: value,
+            }));
+          }}
+          required
         />
-
-        {/* <input
-              type="text"
-              onChange={(e) =>
-                setBlogData({ ...blogData, title: e.target.value })
-              }
-              value={blogData.title}
-            /> */}
 
         <TextEditor onChange={handleEditorChange} />
 
-        <Button>Submit</Button>
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          Submit
+        </Button>
       </form>
+
+      <ContentDisplay content={form.getValues("content")} />
     </div>
   );
 }

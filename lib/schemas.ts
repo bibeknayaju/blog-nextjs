@@ -9,14 +9,13 @@ export const PostSchema = z.object({
     .min(5)
     .max(100),
   content: z.string(),
-  published: z.boolean(),
   summary: z.string().optional(),
-  slug: z.string(),
 });
 
 // if exclude id
 export const CreatePost = PostSchema.omit({ id: true });
 export const DeletePost = PostSchema.pick({ id: true });
+export const UpdatePost = PostSchema;
 
 export const CommentSchema = z.object({
   id: z.string(),
