@@ -62,6 +62,10 @@ async function PostPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
+      <div>
+        <span>this is demo</span>
+      </div>
+
       {post && <PostInteractionComp post={post} />}
 
       <div>
