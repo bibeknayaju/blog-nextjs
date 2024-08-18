@@ -10,6 +10,7 @@ export const PostSchema = z.object({
     .max(100),
   content: z.string(),
   summary: z.string().optional(),
+  slug: z.string().optional(),
 });
 
 // if exclude id

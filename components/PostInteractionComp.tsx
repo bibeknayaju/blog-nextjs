@@ -19,7 +19,6 @@ import { deletePost, updatePost } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { UpdatePost } from "@/lib/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import UpdateTextEditor from "./UpdateTextEditor";
 
