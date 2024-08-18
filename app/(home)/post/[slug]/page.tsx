@@ -62,17 +62,13 @@ async function PostPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      <div>
-        <span>this is demo</span>
-      </div>
-
       {post && <PostInteractionComp post={post} />}
 
       <div>
-        <img
+        <Image
           className="w-full h-[30rem] object-cover"
           src={post?.fileUrl || ""}
-          alt={post?.title}
+          alt={post?.title || ""}
         />
 
         {post?.content && (
