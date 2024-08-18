@@ -38,14 +38,15 @@ export default function Navbar() {
         </Link>
         <div className="flex items-center space-x-5">
           {session?.user && (
-            <button
-              onClick={() => {
-                navigate.push("/write");
-              }}
+            <Link
+              href={"/write"}
+              // onClick={() => {
+              //   navigate.push("/write");
+              // }}
               className="flex gap-2 items-center text-sm text-gray-700 dark:text-gray-300">
               <PenLine className="h-4 w-4" />
               <span>Write</span>
-            </button>
+            </Link>
           )}
 
           {session && (
